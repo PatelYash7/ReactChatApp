@@ -9,54 +9,53 @@ import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from '../firebase';
 
 function Input() {
-  const{currentUser}=useContext(AuthContext);
-  const{data}=useContext(ChatContext);
+  const [text, setText] = useState("");
+  const [img, setImg] = useState(null);
 
+  const { currentUser } = useContext(AuthContext);
+  const { data } = useContext(ChatContext);
 
-  const[text,setText]=useState("");
-  const[img,setImg]=useState(null); 
+  const handleSend = async () => {
+    if (img) {
+      const storageRef = ref(storage, uuid());
 
-  async function handleSend(){
-    if(img){
-      const storageRef=ref(storage,uuid());
-      const uploadTask =uploadBytesResumable(storageRef,img);
+      const uploadTask = uploadBytesResumable(storageRef, img);
+
       uploadTask.on(
         (error) => {
-          
-        },  
+          //TODO:Handle Error
+        },
         () => {
-          // Handle successful uploads on complete
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            await updateDoc(doc(db,"chats",data.chatId),{
-              messages:arrayUnion({
-                id:uuid(),
+            await updateDoc(doc(db, "chats", data.chatId), {
+              messages: arrayUnion({
+                id: uuid(),
                 text,
-                senderId:currentUser.uid,
-                date:Timestamp.now(),
-                img:downloadURL
-              })
-            })
+                senderId: currentUser.uid,
+                date: Timestamp.now(),
+                img: downloadURL,
+              }),
+            });
           });
         }
       );
-
-    }else{
-      await updateDoc(doc(db,"chats",data.chatId),{
-        messages:arrayUnion({
-          id:uuid(),
+    } else {
+      await updateDoc(doc(db, "chats", data.chatId), {
+        messages: arrayUnion({
+          id: uuid(),
           text,
-          senderId:currentUser.uid,
-          date:Timestamp.now()
+          senderId: currentUser.uid,
+          date: Timestamp.now(),
         }),
       });
     }
+
     await updateDoc(doc(db, "userChats", currentUser.uid), {
       [data.chatId + ".lastMessage"]: {
         text,
       },
       [data.chatId + ".date"]: serverTimestamp(),
     });
-    
 
     await updateDoc(doc(db, "userChats", data.user.uid), {
       [data.chatId + ".lastMessage"]: {
@@ -65,9 +64,9 @@ function Input() {
       [data.chatId + ".date"]: serverTimestamp(),
     });
 
+    setText("");
     setImg(null);
-    setText(" "); 
-  }
+  };
 
   
   return (
