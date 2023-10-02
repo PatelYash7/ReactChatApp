@@ -19,9 +19,6 @@ function Register() {
     const email = e.target[1].value;
     const password = e.target[2].value;
     const file = e.target[3].files[0];
-    // console.log(displayName + email + password + file);
-
-
     try {
       // Create User With Firebase 
       // This will function will create user and then stored in res as a object
@@ -34,7 +31,6 @@ function Register() {
         (error) => {
           // Handle unsuccessful uploads
           setErr(true);
-          console.log(error);
         },  
         () => {
           // Handle successful uploads on complete
@@ -55,14 +51,10 @@ function Register() {
           });
         }
       );
-
-
     } catch (err) {
-      console.log(e)
+      console.log(err)
       setErr(true);
     }
-
-
   };
 
   // Design
